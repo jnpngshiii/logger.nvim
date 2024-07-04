@@ -47,7 +47,7 @@ logger.info("hello world")
 ### Plugin usage
 
 1. Install logger.nvim as a dependency.
-2. Create a new file named `plugin_logger.lua` in your plugin directory:
+2. Create a new file named `Logger.lua` in your plugin directory:
 
 ```lua
 local logger = require("logger")
