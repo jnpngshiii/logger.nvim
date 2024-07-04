@@ -7,26 +7,73 @@
 ---  - Neovim 0.10.0 or later
 ---
 ---Usage:
----  1. Single file usage:
 ---  Suppose you are developing a plugin named `your_awesome_plugin`.
----  Just copy and paste this file to your plugin directory,
----  and modify the return statement at the end of this file.
 ---  ```bash
----  > cd ~/.config/nvim/plugin/your_awesome_plugin
+---  > cd path/to/your_awesome_plugin
+---  > tree
+---  .
+---  |-- database.lua
+---  |-- init.lua
+---  `-- utils.lua
+---  ```
+---
+---  1. Single file usage:
+---
+---  1.1. Copy and paste this file to your plugin directory,
+---  ```bash
+---  > cd path/to/your_awesome_plugin
 ---  > tree
 ---  .
 ---  |-- database.lua
 ---  |-- init.lua
 ---  |-- utils.lua
----  `-- Logger.lua
----  >
+---  `-- Logger.lua # <- copy and paste this file
 ---  ```
 ---
----  Then, add the following code at the beginning of your plugin files.
+---  1.2. Then, modify the return statement at the end of this file.
+---  ```lua
+---  return Logger:new("your_awesome_plugin", vim.log.levels.INFO)
+---  ```
+---
+---  1.3. Next, add the following code at the beginning of your plugin files.
 ---  For example, in `database.lua`:
 ---  ```lua
 ---  local logger = require("your_awesome_plugin.Logger"):register_source("Database")
+---  ```
+---  Now, you can use `logger` to log events in your plugin.
+---  ```lua
+---  logger.info("Hello, world!")
+---  ```
 ---
+---  2. Plugin usage:
+---
+---  2.1. Install this plugin using your favorite plugin manager.
+---  For example, using `lazy.nvim`:
+---  ```lua
+---  {
+---    "jnpngshiii/logger.nvim",
+---  }
+---  ```
+---
+---  2.2. Then, create a new file named `plugin_logger.lua` in your plugin directory, and add the following code:
+---  ```lua
+---  local logger = require("logger")
+---  local plugin_logger = logger:new("your_awesome_plugin", vim.log.levels.INFO)
+---  return plugin_logger
+---  ```
+---
+---  2.3. Next, add the following code at the beginning of your plugin files.
+---  For example, in `database.lua`:
+---  ```lua
+---  local logger = require("your_awesome_plugin.Logger"):register_source("Database")
+---  ```
+---  Now, you can use `logger` to log events in your plugin.
+---  ```lua
+---  logger.info("Hello, world!")
+---  ```
+---
+---Examples:
+---  ```lua
 ---  -- Basic usage
 ---  logger.info("successfully connected to database")
 ---  -- This will produce a log entry like:
@@ -80,9 +127,6 @@
 ---  --     Extra info: user = "foo"
 ---  --     Extra info: time = 1720072419
 ---  ```
----
----  2. Plugin usage:
----    ...
 
 -- TODO: Dynamically change log level
 -- TODO: Manange all loggers in one place (`find`, ...)

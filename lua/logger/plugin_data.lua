@@ -5,6 +5,7 @@ local plugin_data = {}
 ----------
 
 ---@class plugin_data.config
+plugin_data.config = {}
 
 ----------
 -- Class plugin_data.cache
