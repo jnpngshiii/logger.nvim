@@ -2,17 +2,17 @@
 
 A simple logging system for Neovim plugins.
 
-## Features
+## :star2: Features
 
 - Easy to integrate with existing Neovim plugins
 - Support for multiple log sources within a plugin
 - Structured logging with support for content, cause, action, and extra information
 
-## Requirements
+## :electric_plug: Requirements
 
 - Neovim >= v0.10.0
 
-## Installation
+## :package: Installation
 
 Install via your favorite package manager. For example, using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
@@ -22,7 +22,13 @@ Install via your favorite package manager. For example, using [lazy.nvim](https:
 }
 ```
 
-## Usage
+Or, using [rocks.nvim](https://github.com/nvim-neorocks/rocks.nvim):
+
+```vim
+:Rocks install logger.nvim
+```
+
+## :books: Usage
 
 There are two ways to use `logger.nvim` in your plugin:
 
@@ -64,7 +70,7 @@ logger.debug("hello world")
 -- 2024-07-04 13:52:43 [DEBUG] <Utils> hello world.
 ```
 
-## Examples
+## :clipboard: Examples
 
 Here are some examples of how to use `logger.nvim` in your plugin:
 
@@ -128,14 +134,14 @@ logger.error({
 --     Extra info: time = 1720072419
 ```
 
-## Contributing
+## :dart: Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## Credits
+## :wave: Credits
 
 Created by [jnpngshiii](https://github.com/jnpngshiii).
 
-## License
+## :page_with_curl: License
 
 GNU General Public License v3.0
