@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/jnpngshiii/logger.nvim/compare/v0.3.0...v0.3.1) (2024-07-05)
+
+
+### Features
+
+* add `log_utils` ([1252c87](https://github.com/jnpngshiii/logger.nvim/commit/1252c87a737b4c2b1ebc5f01079e15f9004226bd))
+* add `vim_notify` ([ef67c35](https://github.com/jnpngshiii/logger.nvim/commit/ef67c35eed5104015fd49c3eda9dd3e66fb5c854))
+
 ## [0.3.0](https://github.com/jnpngshiii/logger.nvim/compare/v0.2.1...v0.3.0) (2024-07-05)
 
 
