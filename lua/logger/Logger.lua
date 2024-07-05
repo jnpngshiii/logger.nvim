@@ -304,8 +304,9 @@ end
 ---@param level number Level of the event.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
 ---@return Event? event The created event.
-function Logger:log(level, source, event_info)
+function Logger:log(level, source, event_info, vim_notify)
   if not vim.tbl_contains({ 0, 1, 2, 3, 4 }, level) then
     vim.schedule(function()
       vim.notify("Failed to log event: invalid `level`", vim.log.levels.ERROR)
@@ -339,13 +340,16 @@ function Logger:log(level, source, event_info)
   end
 
   local event = Event:new(level, source, content, cause, action, extra_info)
-
   table.insert(self.events, event)
+
   local msg = event:to_msg()
-  vim.schedule(function()
-    self:save(msg)
-    vim.notify(msg, level)
-  end)
+  self:save(msg)
+
+  if vim_notify then
+    vim.schedule(function()
+      vim.notify(msg, level)
+    end)
+  end
 
   return event
 end
@@ -357,46 +361,46 @@ end
 ---Log an [TRACE] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
 ---@return Event? event The created event.
-function Logger:trace(source, event_info)
-  return self:log(vim.log.levels.TRACE, source, event_info)
+function Logger:trace(source, event_info, vim_notify)
+  return self:log(vim.log.levels.TRACE, source, event_info, vim_notify)
 end
 
 ---Log an [DEBUG] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
 ---@return Event? event The created event.
-function Logger:debug(source, event_info)
-  return self:log(vim.log.levels.DEBUG, source, event_info)
+function Logger:debug(source, event_info, vim_notify)
+  return self:log(vim.log.levels.DEBUG, source, event_info, vim_notify)
 end
 
 ---Log an [INFO] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
 ---@return Event? event The created event.
-function Logger:info(source, event_info)
-  return self:log(vim.log.levels.INFO, source, event_info)
+function Logger:info(source, event_info, vim_notify)
+  return self:log(vim.log.levels.INFO, source, event_info, vim_notify)
 end
 
 ---Log an [WARN] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
 ---@return Event? event The created event.
-function Logger:warn(source, event_info)
-  return self:log(vim.log.levels.WARN, source, event_info)
+function Logger:warn(source, event_info, vim_notify)
+  return self:log(vim.log.levels.WARN, source, event_info, vim_notify)
 end
 
 ---Log an [ERROR] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
 ---@return Event? event The created event.
-function Logger:error(source, event_info)
-  return self:log(vim.log.levels.ERROR, source, event_info)
+function Logger:error(source, event_info, vim_notify)
+  return self:log(vim.log.levels.ERROR, source, event_info, vim_notify)
 end
 
 ---Register a new source for this logger.
@@ -405,20 +409,20 @@ end
 ---@return table
 function Logger:register_source(source)
   return {
-    trace = function(event_info)
-      return self:trace(source, event_info)
+    trace = function(event_info, vim_notify)
+      return self:trace(source, event_info, vim_notify)
     end,
-    debug = function(event_info)
-      return self:debug(source, event_info)
+    debug = function(event_info, vim_notify)
+      return self:debug(source, event_info, vim_notify)
     end,
-    info = function(event_info)
-      return self:info(source, event_info)
+    info = function(event_info, vim_notify)
+      return self:info(source, event_info, vim_notify)
     end,
-    warn = function(event_info)
-      return self:warn(source, event_info)
+    warn = function(event_info, vim_notify)
+      return self:warn(source, event_info, vim_notify)
     end,
-    error = function(event_info)
-      return self:error(source, event_info)
+    error = function(event_info, vim_notify)
+      return self:error(source, event_info, vim_notify)
     end,
   }
 end
