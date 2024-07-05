@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/jnpngshiii/logger.nvim/compare/v0.3.1...v0.4.0) (2024-07-05)
+
+
+### ⚠ BREAKING CHANGES
+
+* update user func and more
+
+### Features
+
+* update user func and more ([eeeef0a](https://github.com/jnpngshiii/logger.nvim/commit/eeeef0a6d61f3bd1710e87b6b2ec145934ccf282))
+* **user_func:** add `set_log_level` ([1dfb256](https://github.com/jnpngshiii/logger.nvim/commit/1dfb256a27cade6190eed7e223f302f1e786773e))
+
 ## [0.3.1](https://github.com/jnpngshiii/logger.nvim/compare/v0.3.0...v0.3.1) (2024-07-05)
 
 
