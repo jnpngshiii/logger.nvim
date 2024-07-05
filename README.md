@@ -52,19 +52,11 @@ logger.info("hello world")
 
 ### Plugin usage
 
-1. Install logger.nvim as a dependency.
-2. Create a new file named `Logger.lua` in your plugin directory:
+1. Install via your favorite package manager.
+2. In your plugin files (e.g, `utils.lua`), add:
 
 ```lua
-local logger = require("logger")
-local plugin_logger = logger:new("your_awesome_plugin", vim.log.levels.INFO)
-return plugin_logger
-```
-
-3. In your plugin files (e.g, `utils.lua`), add:
-
-```lua
-local logger = require("your_awesome_plugin.Logger"):register_source("Utils")
+local logger = require("logger").register_plugin("your_awesome_plugin"):register_source("Utils")
 logger.debug("hello world")
 -- This will produce a log entry like:
 -- 2024-07-04 13:52:43 [DEBUG] <Utils> hello world.
@@ -75,10 +67,7 @@ logger.debug("hello world")
 Here are some examples of how to use `logger.nvim` in your plugin:
 
 ```lua
--- Suppose you are developing a plugin named `database_manager`
-
--- In database.lua
-local logger = require("database_manager.Logger"):register_source("Database")
+local logger = require("logger").register_plugin("your_awesome_plugin"):register_source("Database")
 
 -- Basic usage
 logger.info("successfully connected to database")
