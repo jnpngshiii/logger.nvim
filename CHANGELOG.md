@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.0...v0.4.1) (2024-07-05)
+
+
+### Features
+
+* **user_func:** update ([000f4bf](https://github.com/jnpngshiii/logger.nvim/commit/000f4bf1cfa30c1b780cd68984ee63f126f4671c))
+
 ## [0.4.0](https://github.com/jnpngshiii/logger.nvim/compare/v0.3.1...v0.4.0) (2024-07-05)
 
 
