@@ -1,28 +1,45 @@
+local Logger = require("logger.Logger")
 local plugin_func = require("logger.plugin_func")
 
 --------------------
 
 local M = {}
-M.log_utils = require("logger.log_utils")
 
----Create a logger and register it to the specified plugin.
+---Create and register a logger for the specified plugin.
+---If already registered, just return the existing logger.
 ---@param plugin_name string Which plugin is using this logger.
----@param log_level number Log level of the logger. Event with level lower than this will not be logged.
----@return Logger logger The create logger.
+---@param log_level? number Log level of the logger. Default: `vim.log.levels.INFO`.
+---If the logger is not exist, a new logger will be created with the specified log level.
+---If the logger is already registered, the log level will be updated.
+---@return Logger logger The registered logger.
 function M.register_plugin(plugin_name, log_level)
-  return plugin_func.register_plugin(plugin_name, log_level)
+  log_level = log_level or vim.log.levels.INFO
+
+  local logger = plugin_func.get_cache().loggers[plugin_name]
+  if not logger then
+    logger = Logger:new(plugin_name, log_level)
+    plugin_func.get_cache().loggers[plugin_name] = logger
+  else
+    logger.log_level = log_level
+  end
+
+  return logger
 end
 
 ----Set up the plugin.
 ---@param user_config table User configuration. Used to override the default configuration.
 ---@return nil
 function M.setup(user_config)
-  user_config = user_config or {}
+  -- Set the plugin configuration.
 
-  -- Merge user config with default config
+  user_config = user_config or {}
   plugin_func.set_config(user_config)
+
+  -- Set the plugin commands.
 end
 
 --------------------
+
+M.log_utils = require("logger.log_utils")
 
 return M
