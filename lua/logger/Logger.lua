@@ -303,12 +303,12 @@ function Logger:save(msg)
   file:close()
 end
 
----Internal method to handle logging.
+---Create a new event and log it.
 ---@param level number Level of the event.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
 ---Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
----@return nil
+---@return Event? event The created event.
 function Logger:log(level, source, event_info)
   if level < self.log_level then
     return
@@ -344,6 +344,8 @@ function Logger:log(level, source, event_info)
     self:save(msg)
     vim.notify(msg, level)
   end)
+
+  return event
 end
 
 ----------
@@ -354,45 +356,45 @@ end
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
 ---Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
----@return nil
+---@return Event? event The created event.
 function Logger:trace(source, event_info)
-  self:log(vim.log.levels.TRACE, source, event_info)
+  return self:log(vim.log.levels.TRACE, source, event_info)
 end
 
 ---Log an [DEBUG] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
 ---Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
----@return nil
+---@return Event? event The created event.
 function Logger:debug(source, event_info)
-  self:log(vim.log.levels.DEBUG, source, event_info)
+  return self:log(vim.log.levels.DEBUG, source, event_info)
 end
 
 ---Log an [INFO] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
 ---Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
----@return nil
+---@return Event? event The created event.
 function Logger:info(source, event_info)
-  self:log(vim.log.levels.INFO, source, event_info)
+  return self:log(vim.log.levels.INFO, source, event_info)
 end
 
 ---Log an [WARN] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
 ---Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
----@return nil
+---@return Event? event The created event.
 function Logger:warn(source, event_info)
-  self:log(vim.log.levels.WARN, source, event_info)
+  return self:log(vim.log.levels.WARN, source, event_info)
 end
 
 ---Log an [ERROR] event. Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
 ---Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
----@return nil
+---@return Event? event The created event.
 function Logger:error(source, event_info)
-  self:log(vim.log.levels.ERROR, source, event_info)
+  return self:log(vim.log.levels.ERROR, source, event_info)
 end
 
 ---Register a new source for this logger.
@@ -402,19 +404,19 @@ end
 function Logger:register_source(source)
   return {
     trace = function(event_info)
-      self:trace(source, event_info)
+      return self:trace(source, event_info)
     end,
     debug = function(event_info)
-      self:debug(source, event_info)
+      return self:debug(source, event_info)
     end,
     info = function(event_info)
-      self:info(source, event_info)
+      return self:info(source, event_info)
     end,
     warn = function(event_info)
-      self:warn(source, event_info)
+      return self:warn(source, event_info)
     end,
     error = function(event_info)
-      self:error(source, event_info)
+      return self:error(source, event_info)
     end,
   }
 end
