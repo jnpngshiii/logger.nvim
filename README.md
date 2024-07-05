@@ -78,7 +78,7 @@ Here are some examples of how to use `logger.nvim` in your plugin:
 -- Suppose you are developing a plugin named `database_manager`
 
 -- In database.lua
-local logger = require("logger"):register_source("Database")
+local logger = require("database_manager.Logger"):register_source("Database")
 
 -- Basic usage
 logger.info("successfully connected to database")
