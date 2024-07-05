@@ -1,61 +1,45 @@
+local Logger = require("logger.Logger")
 local plugin_func = require("logger.plugin_func")
 
 --------------------
 
 local M = {}
-M.log_utils = require("logger.log_utils")
 
----Set the log level of a specific logger.
----@param plugin_name string The name of the logger to set the log level.
----@param log_level number The log level to set.
----@return nil
-function M.set_log_level(plugin_name, log_level)
+---Create and register a logger for the specified plugin.
+---If already registered, just return the existing logger.
+---@param plugin_name string Which plugin is using this logger.
+---@param log_level? number Log level of the logger. Default: `vim.log.levels.INFO`.
+---If the logger is not exist, a new logger will be created with the specified log level.
+---If the logger is already registered, the log level will be updated.
+---@return Logger logger The registered logger.
+function M.register_plugin(plugin_name, log_level)
+  log_level = log_level or vim.log.levels.INFO
+
   local logger = plugin_func.get_cache().loggers[plugin_name]
   if not logger then
-    vim.schedule(function()
-      vim.notify("Failed to set log level: invalid `plugin_name`", vim.log.levels.ERROR)
-    end)
-    return
+    logger = Logger:new(plugin_name, log_level)
+    plugin_func.get_cache().loggers[plugin_name] = logger
+  else
+    logger.log_level = log_level
   end
 
-  if not vim.tbl_contains({ 0, 1, 2, 3, 4 }, log_level) then
-    vim.schedule(function()
-      vim.notify("Failed to set log level: invalid `level`", vim.log.levels.ERROR)
-    end)
-    return
-  end
-
-  logger.level = log_level
-  logger:info("Log level of plugin '" .. plugin_name .. "' is set to " .. log_level)
-end
-
----Create a logger and register it to the specified plugin.
----@param plugin_name string Which plugin is using this logger.
----@param log_level number Log level of the logger. Event with level lower than this will not be logged.
----@return Logger logger The create logger.
-function M.register_plugin(plugin_name, log_level)
-  return plugin_func.register_plugin(plugin_name, log_level)
+  return logger
 end
 
 ----Set up the plugin.
 ---@param user_config table User configuration. Used to override the default configuration.
 ---@return nil
 function M.setup(user_config)
-  user_config = user_config or {}
+  -- Set the plugin configuration.
 
-  -- Merge user config with default config
+  user_config = user_config or {}
   plugin_func.set_config(user_config)
 
-  vim.api.nvim_create_user_command("LoggerSetLogLevel", function(opts)
-    M.set_log_level(opts.fargs[1], opts.fargs[2])
-  end, {
-    nargs = "+",
-    ---@diagnostic disable-next-line: unused-local
-    complete = function(arg_lead, cmd_line, cursor_pos) end,
-    desc = "Set the log level of a specific logger.",
-  })
+  -- Set the plugin commands.
 end
 
 --------------------
+
+M.log_utils = require("logger.log_utils")
 
 return M

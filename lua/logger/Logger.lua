@@ -2,134 +2,8 @@
 ---Description: A simple logger for Neovim.
 ---License: GNU General Public License v3.0
 ---Source: github.com/jnpngshiii/logger.nvim
----
 ---Requirements:
 ---  - Neovim 0.10.0 or later
----
----Usage:
----  Suppose you are developing a plugin named `your_awesome_plugin`.
----  ```bash
----  > cd path/to/your_awesome_plugin
----  > tree
----  .
----  |-- database.lua
----  |-- init.lua
----  `-- utils.lua
----  ```
----
----  1. Single file usage:
----
----  1.1. Copy and paste this file to your plugin directory,
----  ```bash
----  > cd path/to/your_awesome_plugin
----  > tree
----  .
----  |-- database.lua
----  |-- init.lua
----  |-- utils.lua
----  `-- Logger.lua # <- copy and paste this file
----  ```
----
----  1.2. Then, modify the return statement at the end of this file.
----  ```lua
----  return Logger:new("your_awesome_plugin", vim.log.levels.INFO)
----  ```
----
----  1.3. Next, add the following code at the beginning of your plugin files.
----  For example, in `database.lua`:
----  ```lua
----  local logger = require("your_awesome_plugin.Logger"):register_source("Database")
----  ```
----  Now, you can use `logger` to log events in your plugin.
----  ```lua
----  logger.info("Hello, world!")
----  ```
----
----  2. Plugin usage:
----
----  2.1. Install this plugin using your favorite plugin manager.
----  For example, using `lazy.nvim`:
----  ```lua
----  {
----    "jnpngshiii/logger.nvim",
----  }
----  ```
----
----  2.2. Then, create a new file named `plugin_logger.lua` in your plugin directory, and add the following code:
----  ```lua
----  local logger = require("logger")
----  local plugin_logger = logger:new("your_awesome_plugin", vim.log.levels.INFO)
----  return plugin_logger
----  ```
----
----  2.3. Next, add the following code at the beginning of your plugin files.
----  For example, in `database.lua`:
----  ```lua
----  local logger = require("your_awesome_plugin.Logger"):register_source("Database")
----  ```
----  Now, you can use `logger` to log events in your plugin.
----  ```lua
----  logger.info("Hello, world!")
----  ```
----
----Examples:
----  ```lua
----  -- Basic usage
----  logger.info("successfully connected to database")
----  -- This will produce a log entry like:
----  -- 2024-07-04 13:53:39 [INFO] <Database> successfully connected to database.
----
----  -- Advanced usage with additional information
----  logger.warn({
----    content = "failed to save database",
----    cause = "the `save_path` is not specified",
----    action = "use the default path instead",
----    extra_info = {
----      user = "root",
----      time = os.time(),
----      file_path = "default/path/to/save/database",
----      mode = "w",
----    },
----  })
----  -- This will produce a log entry like:
----  -- 2024-07-04 13:53:39 [WARN] <Database> failed to save database: the `save_path` is not specified, use the default path instead.
----  --     Extra info: mode = "w"
----  --     Extra info: user = "root"
----  --     Extra info: file_path = "default/path/to/save/database"
----  --     Extra info: time = 1720072419
----
----  -- Logging complex data structures
----  local item = {
----    a_string_field = "string",
----    a_number_field = 100,
----    a_table_field = { 1, 2, 3 },
----    a_function_field = function() return "function" end,
----    a_wrong_field = "this is a wrong field",
----  }
----  logger.error({
----    content = "failed to add item",
----    cause = "health check failed",
----    extra_info = {
----      user = "foo",
----      time = os.time(),
----      the_item = item,
----    },
----  })
----  -- This will produce a log entry like:
----  -- 2024-07-04 13:53:39 [ERROR] <Database> failed to add item: health check failed.
----  --     Extra info: the_item = {
----  --       a_function_field = <function 1>,
----  --       a_number_field = 100,
----  --       a_string_field = "string",
----  --       a_table_field = { 1, 2, 3 },
----  --       a_wrong_field = "this is a wrong field"
----  --     }
----  --     Extra info: user = "foo"
----  --     Extra info: time = 1720072419
----  ```
-
--- TODO: Dynamically change log level
--- TODO: Manange all loggers in one place (`find`, ...)
 
 --------------------
 -- Class Event
@@ -275,7 +149,7 @@ function Logger:new(plugin_name, log_level)
 
   local logger = {}
   logger.log_path = log_dir .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
-  logger.log_level = log_level
+  logger.log_level = log_level or vim.log.levels.INFO
   logger.events = {}
 
   logger.__index = logger
@@ -304,7 +178,7 @@ end
 ---@param level number Level of the event.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
 function Logger:log(level, source, event_info, vim_notify)
   if not vim.tbl_contains({ 0, 1, 2, 3, 4 }, level) then
@@ -327,7 +201,7 @@ function Logger:log(level, source, event_info, vim_notify)
     extra_info = event_info.extra_info
   else
     vim.schedule(function()
-      vim.notify("Failed to log event: invalid `event_info` type", vim.log.levels.ERROR)
+      vim.notify("Failed to log event: invalid `event_info` type: " .. vim.inspect(event_info), vim.log.levels.ERROR)
     end)
     return
   end
@@ -345,6 +219,7 @@ function Logger:log(level, source, event_info, vim_notify)
   local msg = event:to_msg()
   self:save(msg)
 
+  vim_notify = vim_notify or true
   if vim_notify then
     vim.schedule(function()
       vim.notify(msg, level)
@@ -358,46 +233,51 @@ end
 -- Convenience methods
 ----------
 
----Log an [TRACE] event. Wrapper for `Logger:log`.
+---Log an [TRACE] event.
+---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
 function Logger:trace(source, event_info, vim_notify)
   return self:log(vim.log.levels.TRACE, source, event_info, vim_notify)
 end
 
----Log an [DEBUG] event. Wrapper for `Logger:log`.
+---Log an [DEBUG] event.
+---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
 function Logger:debug(source, event_info, vim_notify)
   return self:log(vim.log.levels.DEBUG, source, event_info, vim_notify)
 end
 
----Log an [INFO] event. Wrapper for `Logger:log`.
+---Log an [INFO] event.
+---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
 function Logger:info(source, event_info, vim_notify)
   return self:log(vim.log.levels.INFO, source, event_info, vim_notify)
 end
 
----Log an [WARN] event. Wrapper for `Logger:log`.
+---Log an [WARN] event.
+---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
 function Logger:warn(source, event_info, vim_notify)
   return self:log(vim.log.levels.WARN, source, event_info, vim_notify)
 end
 
----Log an [ERROR] event. Wrapper for `Logger:log`.
+---Log an [ERROR] event.
+---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user.
+---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
 function Logger:error(source, event_info, vim_notify)
   return self:log(vim.log.levels.ERROR, source, event_info, vim_notify)
@@ -409,18 +289,28 @@ end
 ---@return table
 function Logger:register_source(source)
   return {
+    ---@param event_info table|string Information of the event to be logged.
+    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     trace = function(event_info, vim_notify)
       return self:trace(source, event_info, vim_notify)
     end,
+    ---@param event_info table|string Information of the event to be logged.
+    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     debug = function(event_info, vim_notify)
       return self:debug(source, event_info, vim_notify)
     end,
+    ---@param event_info table|string Information of the event to be logged.
+    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     info = function(event_info, vim_notify)
       return self:info(source, event_info, vim_notify)
     end,
+    ---@param event_info table|string Information of the event to be logged.
+    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     warn = function(event_info, vim_notify)
       return self:warn(source, event_info, vim_notify)
     end,
+    ---@param event_info table|string Information of the event to be logged.
+    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     error = function(event_info, vim_notify)
       return self:error(source, event_info, vim_notify)
     end,
