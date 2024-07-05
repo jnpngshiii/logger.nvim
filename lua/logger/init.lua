@@ -10,7 +10,6 @@ local M = {}
 ---@param plugin_name string Which plugin is using this logger.
 ---@param log_level? number Log level of the logger. Default: `vim.log.levels.INFO`.
 ---If the logger is not exist, a new logger will be created with the specified log level.
----If the logger is already registered, the log level will be updated.
 ---@return Logger logger The registered logger.
 function M.register_plugin(plugin_name, log_level)
   log_level = log_level or vim.log.levels.INFO
@@ -19,8 +18,6 @@ function M.register_plugin(plugin_name, log_level)
   if not logger then
     logger = Logger:new(plugin_name, log_level)
     plugin_func.get_cache().loggers[plugin_name] = logger
-  else
-    logger.log_level = log_level
   end
 
   return logger
