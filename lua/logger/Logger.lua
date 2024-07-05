@@ -237,13 +237,10 @@ function Event:to_msg()
 
   for extra_info_name, extra_info_content in pairs(self.extra_info) do
     msg = msg
-      .. "\n    Extra info: "
+      .. "\nExtra info: "
       .. extra_info_name
       .. " = "
-      .. vim.inspect(extra_info_content, { depth = 2, indent = "      " })
-    if msg:sub(-1) == "}" then
-      msg = msg:sub(1, -2) .. "    }"
-    end
+      .. vim.inspect(extra_info_content, { depth = 2, indent = "  " })
   end
 
   return msg
@@ -307,35 +304,40 @@ end
 ---@param level number Level of the event.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----Can be a table with keys: `content`, `cause?`, `action?`, and `extra_info?`, or a string which is the `content` of the event.
 ---@return Event? event The created event.
 function Logger:log(level, source, event_info)
-  if level < self.log_level then
-    return
-  end
-
   if not vim.tbl_contains({ 0, 1, 2, 3, 4 }, level) then
     vim.schedule(function()
       vim.notify("Failed to log event: invalid `level`", vim.log.levels.ERROR)
     end)
     return
   end
+  if level < self.log_level then
+    return
+  end
 
-  local content
+  local content, cause, action, extra_info
   if type(event_info) == "string" then
     content = event_info
   elseif type(event_info) == "table" then
     content = event_info.content
+    cause = event_info.cause
+    action = event_info.action
+    extra_info = event_info.extra_info
+  else
+    vim.schedule(function()
+      vim.notify("Failed to log event: invalid `event_info` type", vim.log.levels.ERROR)
+    end)
+    return
   end
+
   if not content then
     vim.schedule(function()
       vim.notify("Failed to log event: `content` is not specified", vim.log.levels.ERROR)
     end)
     return
   end
-  local cause = event_info.cause
-  local action = event_info.action
-  local extra_info = event_info.extra_info
+
   local event = Event:new(level, source, content, cause, action, extra_info)
 
   table.insert(self.events, event)
