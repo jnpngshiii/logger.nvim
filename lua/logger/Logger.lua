@@ -12,63 +12,61 @@
 ---@class Event
 ---@field level number Level of the event.
 ---Example:
----  ```
----  vim.log.levels.TRACE (0)
----  vim.log.levels.DEBUG (1)
----  vim.log.levels.INFO (2)
----  vim.log.levels.WARN (3)
----  vim.log.levels.ERROR (4)
----  ```
+---  vim.log.levels.TRACE
+---  vim.log.levels.DEBUG
+---  vim.log.levels.INFO
+---  vim.log.levels.WARN
+---  vim.log.levels.ERROR
 ---@field source string Source of the event.
 ---Example:
----  ```
 ---  "Main"
 ---  "Database"
 ---  "Security"
----  ```
 ---@field content string Content of the event.
----Please do not use any punctuation marks at the end.
+---Please do not use punctuation at the end.
 ---Example:
----  ```
 ---  "failed to open file"
 ---  "cannot connect to database"
 ---  "invalid password"
----  ```
----@field cause string Cause of the event. Default: "not specified".
----Please do not use any punctuation marks at the end.
+---@field cause string Cause of the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
 ---Example:
----  ```
 ---  "the file is not found"
 ---  "the database is not running"
 ---  "the password is too short"
----  ```
----@field action string Action used to handle the event. Default: "not specified".
----Please do not use any punctuation marks at the end.
+---@field action string Action used to handle the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
 ---Example:
----  ```
 ---  "create a new file instead"
 ---  "start the database"
 ---  "change the password"
----  ```
----@field extra_info table Additional information of the event. Default: `{}`.
+---@field extra_info table Additional information of the event.
+---Default: `{}`.
 ---Example:
----  ```
 ---  {
 ---    file_path = "path/to/file",
 ---    mode = "w"
 ---  }
----  ```
----@field timestamp string Timestamp of the event. Default: `os.date("%Y-%m-%d %H:%M:%S")`.
+---@field timestamp string Timestamp of the event.
+---Default: `os.date("%Y-%m-%d %H:%M:%S")`.
 local Event = {}
 Event.__index = Event
 
 ---Create a new event.
 ---@param level number Level of the event.
 ---@param source string Source of the event.
----@param content string The event. Please do not use any punctuation marks at the end.
----@param cause? string Cause of the event. Please do not use any punctuation marks at the end. Default: "not specified".
----@param action? string Action used to handle the event. Please do not use any punctuation marks at the end. Default: "not specified".
----@param extra_info? table Additional information of the event. Default: `{}`.
+---@param content string Content of the event.
+---Please do not use punctuation at the end.
+---@param cause? string Cause of the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
+---@param action? string Action used to handle the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
+---@param extra_info? table Additional information of the event.
+---Default: `{}`.
 ---@return Event event The created event.
 function Event:new(level, source, content, cause, action, extra_info)
   local event = {
@@ -80,7 +78,6 @@ function Event:new(level, source, content, cause, action, extra_info)
     extra_info = extra_info or {},
     timestamp = os.date("%Y-%m-%d %H:%M:%S"),
   }
-  event.__index = event
   setmetatable(event, Event)
 
   return event
@@ -89,25 +86,21 @@ end
 ---Convert an event to a massage.
 ---@return string msg The converted message.
 function Event:to_msg()
-  local content = self.content
-  local cause = ""
-  local action = ""
-  if self.cause ~= "not specified" then
+  -- Get main message --
+
+  local content, cause, action = self.content, self.cause, self.action
+  if cause ~= "not specified" then
     cause = ": " .. self.cause
   end
-  if self.action ~= "not specified" then
+  if action ~= "not specified" then
     action = ", " .. self.action
   end
+  local msg = string.format("%s%s%s.", content, cause, action)
 
-  local msg = string.format(
-    "%s [%s] <%s> %s%s%s.",
-    self.timestamp,
-    vim.lsp.log_levels[self.level],
-    self.source,
-    content,
-    cause,
-    action
-  )
+  -- Get prefix --
+
+  msg = string.format("%s [%s] <%s> %s", self.timestamp, vim.lsp.log_levels[self.level], self.source, msg)
+  -- Get extra info --
 
   for extra_info_name, extra_info_content in pairs(self.extra_info) do
     msg = msg
@@ -127,8 +120,13 @@ end
 ---@class Logger
 ---@field log_path string File path of the logger.
 ---Default: `vim.fn.stdpath("data") .. "/" .. {plugin_name} .. "/" .. "logs" .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"`.
----@field log_level number Log level of the logger. Event with level lower than this will not be logged.
+---@field log_level number Log level of the logger.
+---Event with level lower than this will not be logged.
 ---Default: `vim.log.levels.INFO`.
+---@field source_log_levels table Log levels of each source.
+---Set this to override the default log level of the logger.
+---See `Logger:register_source` for more information.
+---Default: `{}`.
 ---@field events Event Logged events of the logger.
 local Logger = {}
 Logger.__index = Logger
