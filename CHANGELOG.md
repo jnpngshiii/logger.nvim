@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.2](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.1...v0.4.2) (2024-07-07)
+
+
+### Features
+
+* **log_utils:** update the output of function `safe_call` ([edafa53](https://github.com/jnpngshiii/logger.nvim/commit/edafa5312871851e5c1a444a23d159dc29333b99))
+* **Logger:** add arg `log_level` to function `register_source` to allow specified sources to have its own log level ([35f1a3e](https://github.com/jnpngshiii/logger.nvim/commit/35f1a3ea520a23ea16e8614239fbcd8ecfd83bc7))
+
 ## [0.4.1](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.0...v0.4.1) (2024-07-05)
 
 
