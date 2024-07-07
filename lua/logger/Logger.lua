@@ -149,6 +149,7 @@ function Logger:new(plugin, log_level)
   local logger = {
     log_path = log_dir .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log",
     log_level = log_level or vim.log.levels.INFO,
+    source_log_levels = {},
     events = {},
   }
   setmetatable(logger, Logger)
