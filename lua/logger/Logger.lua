@@ -284,35 +284,38 @@ function Logger:error(source, event_info, vim_notify)
 end
 
 ---Register a new source for this logger.
----Waprper for `Logger:trace`, `Logger:debug`, `Logger:info`, `Logger:warn`, and `Logger:error`.
 ---@param source string The source for this logger.
+---@param log_level? number Log level of the source. This value will override the default log level of the logger.
+---So, you can use this to set different log levels for different sources. Default: `self.log_level`.
 ---@return table
-function Logger:register_source(source)
+function Logger:register_source(source, log_level)
+  log_level = log_level or self.log_level
+
   return {
     ---@param event_info table|string Information of the event to be logged.
     ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     trace = function(event_info, vim_notify)
-      return self:trace(source, event_info, vim_notify)
+      return self:log(log_level, source, event_info, vim_notify)
     end,
     ---@param event_info table|string Information of the event to be logged.
     ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     debug = function(event_info, vim_notify)
-      return self:debug(source, event_info, vim_notify)
+      return self:log(log_level, source, event_info, vim_notify)
     end,
     ---@param event_info table|string Information of the event to be logged.
     ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     info = function(event_info, vim_notify)
-      return self:info(source, event_info, vim_notify)
+      return self:log(log_level, source, event_info, vim_notify)
     end,
     ---@param event_info table|string Information of the event to be logged.
     ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     warn = function(event_info, vim_notify)
-      return self:warn(source, event_info, vim_notify)
+      return self:log(log_level, source, event_info, vim_notify)
     end,
     ---@param event_info table|string Information of the event to be logged.
     ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
     error = function(event_info, vim_notify)
-      return self:error(source, event_info, vim_notify)
+      return self:log(log_level, source, event_info, vim_notify)
     end,
   }
 end
