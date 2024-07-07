@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.2...v0.4.3) (2024-07-07)
+
+
+### Bug Fixes
+
+* fix a log level bug ([dc67d18](https://github.com/jnpngshiii/logger.nvim/commit/dc67d1838edb05a237f01c8ba5d1b422224acd89))
+
 ## [0.4.2](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.1...v0.4.2) (2024-07-07)
 
 
