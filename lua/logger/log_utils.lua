@@ -21,7 +21,7 @@ function utils.safe_call(event_content, func, ...)
       cause = result,
       extra_info = {
         func_name = debug.getinfo(func, "n").name or "anonymous function",
-        func_args = { ... },
+        func_args = ...,
       },
     }
     return success, event_info
