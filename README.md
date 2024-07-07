@@ -56,10 +56,23 @@ logger.info("hello world")
 2. In your plugin files (e.g, `utils.lua`), add:
 
 ```lua
-local logger = require("logger").register_plugin("your_awesome_plugin"):register_source("Utils")
-logger.debug("hello world")
--- This will produce a log entry like:
--- 2024-07-04 13:52:43 [DEBUG] <Utils> hello world.
+local Logger = require("logger").register_plugin("your_awesome_plugin", vim.log.levels.INFO)
+Logger:debug("Utils", "hello world")
+-- whoops, no output at all...
+Logger:info("Utils", "hello world")
+-- 2024-07-04 13:52:42 [INFO] <Utils> hello world.
+
+-- If you do not want to write "Utils" every time, you can use `register_source`.
+local logger = Logger:register_source("Utils")
+logger.warn("I don't have to write 'Utils' anymore")
+-- 2024-07-04 13:52:43 [WARN] <Utils> I don't have to write 'Utils' anymore.
+
+-- If you want to use `logger.trace` to debug this utils file,
+-- but you do not want to set the global log level to trace to avoid `logger.trace` contamination from other files,
+-- you can set a localized log level.
+local logger = Logger:register_source("Utils", vim.log.levels.TRACE)
+logger.warn("I am running...")
+-- 2024-07-04 13:52:43 [Trace] <Utils> I am running...
 ```
 
 ## :clipboard: Examples
@@ -71,7 +84,6 @@ local logger = require("logger").register_plugin("your_awesome_plugin"):register
 
 -- Basic usage
 logger.info("successfully connected to database")
--- This will produce a log entry like:
 -- 2024-07-04 13:53:39 [INFO] <Database> successfully connected to database.
 
 -- Advanced usage with additional information
@@ -86,12 +98,11 @@ logger.warn({
     mode = "w",
   },
 })
--- This will produce a log entry like:
 -- 2024-07-04 13:53:39 [WARN] <Database> failed to save database: the `save_path` is not specified, use the default path instead.
---     Extra info: mode = "w"
---     Extra info: user = "root"
---     Extra info: file_path = "default/path/to/save/database"
---     Extra info: time = 1720072419
+-- Extra info: mode = "w"
+-- Extra info: user = "root"
+-- Extra info: file_path = "default/path/to/save/database"
+-- Extra info: time = 1720072419
 
 -- Logging complex data structures
 local item = {
@@ -110,17 +121,16 @@ logger.error({
     the_item = item,
   },
 })
--- This will produce a log entry like:
 -- 2024-07-04 13:53:39 [ERROR] <Database> failed to add item: health check failed.
---     Extra info: the_item = {
---       a_function_field = <function 1>,
---       a_number_field = 100,
---       a_string_field = "string",
---       a_table_field = { 1, 2, 3 },
---       a_wrong_field = "this is a wrong field"
---     }
---     Extra info: user = "foo"
---     Extra info: time = 1720072419
+-- Extra info: the_item = {
+--   a_function_field = <function 1>,
+--   a_number_field = 100,
+--   a_string_field = "string",
+--   a_table_field = { 1, 2, 3 },
+--   a_wrong_field = "this is a wrong field"
+-- }
+-- Extra info: user = "foo"
+-- Extra info: time = 1720072419
 ```
 
 ## :dart: Contributing
