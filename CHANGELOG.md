@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.5](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.4...v0.4.5) (2024-07-07)
+
+
+### Bug Fixes
+
+* **Logger:** fix a msg bug ([a162817](https://github.com/jnpngshiii/logger.nvim/commit/a16281765e6ea4d8f3016d8b962f4a9611716d10))
+
 ## [0.4.4](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.3...v0.4.4) (2024-07-07)
 
 
