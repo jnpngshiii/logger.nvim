@@ -12,63 +12,61 @@
 ---@class Event
 ---@field level number Level of the event.
 ---Example:
----  ```
----  vim.log.levels.TRACE (0)
----  vim.log.levels.DEBUG (1)
----  vim.log.levels.INFO (2)
----  vim.log.levels.WARN (3)
----  vim.log.levels.ERROR (4)
----  ```
+---  vim.log.levels.TRACE
+---  vim.log.levels.DEBUG
+---  vim.log.levels.INFO
+---  vim.log.levels.WARN
+---  vim.log.levels.ERROR
 ---@field source string Source of the event.
 ---Example:
----  ```
 ---  "Main"
 ---  "Database"
 ---  "Security"
----  ```
 ---@field content string Content of the event.
----Please do not use any punctuation marks at the end.
+---Please do not use punctuation at the end.
 ---Example:
----  ```
 ---  "failed to open file"
 ---  "cannot connect to database"
 ---  "invalid password"
----  ```
----@field cause string Cause of the event. Default: "not specified".
----Please do not use any punctuation marks at the end.
+---@field cause string Cause of the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
 ---Example:
----  ```
 ---  "the file is not found"
 ---  "the database is not running"
 ---  "the password is too short"
----  ```
----@field action string Action used to handle the event. Default: "not specified".
----Please do not use any punctuation marks at the end.
+---@field action string Action used to handle the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
 ---Example:
----  ```
 ---  "create a new file instead"
 ---  "start the database"
 ---  "change the password"
----  ```
----@field extra_info table Additional information of the event. Default: `{}`.
+---@field extra_info table Additional information of the event.
+---Default: `{}`.
 ---Example:
----  ```
 ---  {
 ---    file_path = "path/to/file",
 ---    mode = "w"
 ---  }
----  ```
----@field timestamp string Timestamp of the event. Default: `os.date("%Y-%m-%d %H:%M:%S")`.
+---@field timestamp string Timestamp of the event.
+---Default: `os.date("%Y-%m-%d %H:%M:%S")`.
 local Event = {}
 Event.__index = Event
 
 ---Create a new event.
 ---@param level number Level of the event.
 ---@param source string Source of the event.
----@param content string The event. Please do not use any punctuation marks at the end.
----@param cause? string Cause of the event. Please do not use any punctuation marks at the end. Default: "not specified".
----@param action? string Action used to handle the event. Please do not use any punctuation marks at the end. Default: "not specified".
----@param extra_info? table Additional information of the event. Default: `{}`.
+---@param content string Content of the event.
+---Please do not use punctuation at the end.
+---@param cause? string Cause of the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
+---@param action? string Action used to handle the event.
+---Please do not use punctuation at the end.
+---Default: `"not specified"`.
+---@param extra_info? table Additional information of the event.
+---Default: `{}`.
 ---@return Event event The created event.
 function Event:new(level, source, content, cause, action, extra_info)
   local event = {
@@ -80,7 +78,6 @@ function Event:new(level, source, content, cause, action, extra_info)
     extra_info = extra_info or {},
     timestamp = os.date("%Y-%m-%d %H:%M:%S"),
   }
-  event.__index = event
   setmetatable(event, Event)
 
   return event
@@ -89,25 +86,21 @@ end
 ---Convert an event to a massage.
 ---@return string msg The converted message.
 function Event:to_msg()
-  local content = self.content
-  local cause = ""
-  local action = ""
-  if self.cause ~= "not specified" then
+  -- Get main message --
+
+  local content, cause, action = self.content, self.cause, self.action
+  if cause ~= "not specified" then
     cause = ": " .. self.cause
   end
-  if self.action ~= "not specified" then
+  if action ~= "not specified" then
     action = ", " .. self.action
   end
+  local msg = string.format("%s%s%s.", content, cause, action)
 
-  local msg = string.format(
-    "%s [%s] <%s> %s%s%s.",
-    self.timestamp,
-    vim.lsp.log_levels[self.level],
-    self.source,
-    content,
-    cause,
-    action
-  )
+  -- Get prefix --
+
+  msg = string.format("%s [%s] <%s> %s", self.timestamp, vim.lsp.log_levels[self.level], self.source, msg)
+  -- Get extra info --
 
   for extra_info_name, extra_info_content in pairs(self.extra_info) do
     msg = msg
@@ -127,8 +120,13 @@ end
 ---@class Logger
 ---@field log_path string File path of the logger.
 ---Default: `vim.fn.stdpath("data") .. "/" .. {plugin_name} .. "/" .. "logs" .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"`.
----@field log_level number Log level of the logger. Event with level lower than this will not be logged.
+---@field log_level number Log level of the logger.
+---Event with level lower than this will not be logged.
 ---Default: `vim.log.levels.INFO`.
+---@field source_log_levels table Log levels of each source.
+---Set this to override the default log level of the logger.
+---See `Logger:register_source` for more information.
+---Default: `{}`.
 ---@field events Event Logged events of the logger.
 local Logger = {}
 Logger.__index = Logger
@@ -138,21 +136,21 @@ Logger.__index = Logger
 ----------
 
 ---Create a new logger for a plugin.
----@param plugin_name string Which plugin is using this logger.
+---@param plugin string Which plugin is using this logger.
 ---Log file will be saved in `vim.fn.stdpath("data") .. "/" .. {plugin_name} .. "/" .. "logs"`.
----@param log_level number Log level of the logger. Event with level lower than this will not be logged.
+---@param log_level number Log level of the logger.
+---Event with level lower than this will not be logged.
 ---Default: `vim.log.levels.INFO`.
 ---@return Logger logger The create logger.
-function Logger:new(plugin_name, log_level)
-  local log_dir = vim.fn.stdpath("data") .. "/" .. plugin_name .. "/" .. "logs"
+function Logger:new(plugin, log_level)
+  local log_dir = vim.fn.stdpath("data") .. "/" .. plugin .. "/" .. "logs"
   vim.fn.mkdir(log_dir, "p")
 
-  local logger = {}
-  logger.log_path = log_dir .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log"
-  logger.log_level = log_level or vim.log.levels.INFO
-  logger.events = {}
-
-  logger.__index = logger
+  local logger = {
+    log_path = log_dir .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log",
+    log_level = log_level or vim.log.levels.INFO,
+    events = {},
+  }
   setmetatable(logger, Logger)
 
   return logger
@@ -165,7 +163,7 @@ function Logger:save(msg)
   local file, cause = io.open(self.log_path, "a")
   if not file then
     vim.schedule(function()
-      vim.notify("Failed to save msg: " .. cause, vim.log.levels.ERROR)
+      vim.notify("failed to save msg: " .. cause, vim.log.levels.ERROR)
     end)
     return
   end
@@ -178,16 +176,17 @@ end
 ---@param level number Level of the event.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
-function Logger:log(level, source, event_info, vim_notify)
+function Logger:log(level, source, event_info)
   if not vim.tbl_contains({ 0, 1, 2, 3, 4 }, level) then
     vim.schedule(function()
-      vim.notify("Failed to log event: invalid `level`", vim.log.levels.ERROR)
+      vim.notify("failed to log event: invalid `level`", vim.log.levels.ERROR)
     end)
     return
   end
-  if level < self.log_level then
+
+  local local_log_level = self.source_log_levels[source] or self.log_level
+  if level < local_log_level then
     return
   end
 
@@ -201,14 +200,13 @@ function Logger:log(level, source, event_info, vim_notify)
     extra_info = event_info.extra_info
   else
     vim.schedule(function()
-      vim.notify("Failed to log event: invalid `event_info` type: " .. vim.inspect(event_info), vim.log.levels.ERROR)
+      vim.notify("failed to log event: invalid `event_info` type: " .. vim.inspect(event_info), vim.log.levels.ERROR)
     end)
     return
   end
-
   if not content then
     vim.schedule(function()
-      vim.notify("Failed to log event: `content` is not specified", vim.log.levels.ERROR)
+      vim.notify("failed to log event: `content` is not specified", vim.log.levels.ERROR)
     end)
     return
   end
@@ -219,12 +217,9 @@ function Logger:log(level, source, event_info, vim_notify)
   local msg = event:to_msg()
   self:save(msg)
 
-  vim_notify = vim_notify or true
-  if vim_notify then
-    vim.schedule(function()
-      vim.notify(msg, level)
-    end)
-  end
+  vim.schedule(function()
+    vim.notify(msg, level)
+  end)
 
   return event
 end
@@ -237,85 +232,81 @@ end
 ---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
-function Logger:trace(source, event_info, vim_notify)
-  return self:log(vim.log.levels.TRACE, source, event_info, vim_notify)
+function Logger:trace(source, event_info)
+  return self:log(vim.log.levels.TRACE, source, event_info)
 end
 
 ---Log an [DEBUG] event.
 ---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
-function Logger:debug(source, event_info, vim_notify)
-  return self:log(vim.log.levels.DEBUG, source, event_info, vim_notify)
+function Logger:debug(source, event_info)
+  return self:log(vim.log.levels.DEBUG, source, event_info)
 end
 
 ---Log an [INFO] event.
 ---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
-function Logger:info(source, event_info, vim_notify)
-  return self:log(vim.log.levels.INFO, source, event_info, vim_notify)
+function Logger:info(source, event_info)
+  return self:log(vim.log.levels.INFO, source, event_info)
 end
 
 ---Log an [WARN] event.
 ---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
-function Logger:warn(source, event_info, vim_notify)
-  return self:log(vim.log.levels.WARN, source, event_info, vim_notify)
+function Logger:warn(source, event_info)
+  return self:log(vim.log.levels.WARN, source, event_info)
 end
 
 ---Log an [ERROR] event.
 ---Wrapper for `Logger:log`.
 ---@param source string Source of the event.
 ---@param event_info table|string Information of the event to be logged.
----@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
 ---@return Event? event The created event.
-function Logger:error(source, event_info, vim_notify)
-  return self:log(vim.log.levels.ERROR, source, event_info, vim_notify)
+function Logger:error(source, event_info)
+  return self:log(vim.log.levels.ERROR, source, event_info)
 end
 
 ---Register a new source for this logger.
----@param source string The source for this logger.
----@param log_level? number Log level of the source. This value will override the default log level of the logger.
----So, you can use this to set different log levels for different sources. Default: `self.log_level`.
+---@param source string A source of the logger.
+---@param log_level? number Log level of the source.
+---This value will override the default log level of the logger.
+---So, you can use this to set different log levels for different sources.
+---Default: `nil`.
 ---@return table
 function Logger:register_source(source, log_level)
-  log_level = log_level or self.log_level
+  self.source_log_levels[source] = log_level
 
   return {
     ---@param event_info table|string Information of the event to be logged.
-    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
-    trace = function(event_info, vim_notify)
-      return self:log(log_level, source, event_info, vim_notify)
+    trace = function(event_info)
+      return self:trace(source, event_info)
     end,
+
     ---@param event_info table|string Information of the event to be logged.
-    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
-    debug = function(event_info, vim_notify)
-      return self:log(log_level, source, event_info, vim_notify)
+    debug = function(event_info)
+      return self:debug(source, event_info)
     end,
+
     ---@param event_info table|string Information of the event to be logged.
-    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
-    info = function(event_info, vim_notify)
-      return self:log(log_level, source, event_info, vim_notify)
+    info = function(event_info)
+      return self:info(source, event_info)
     end,
+
     ---@param event_info table|string Information of the event to be logged.
-    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
-    warn = function(event_info, vim_notify)
-      return self:log(log_level, source, event_info, vim_notify)
+    warn = function(event_info)
+      return self:warn(source, event_info)
     end,
+
     ---@param event_info table|string Information of the event to be logged.
-    ---@param vim_notify? boolean Whether to use `vim.notify` to notify the user. Default: `true`.
-    error = function(event_info, vim_notify)
-      return self:log(log_level, source, event_info, vim_notify)
+    error = function(event_info)
+      return self:error(source, event_info)
     end,
   }
 end
