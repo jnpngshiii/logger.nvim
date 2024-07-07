@@ -91,9 +91,13 @@ function Event:to_msg()
   local content, cause, action = self.content, self.cause, self.action
   if cause ~= "not specified" then
     cause = ": " .. self.cause
+  else
+    cause = ""
   end
   if action ~= "not specified" then
     action = ", " .. self.action
+  else
+    action = ""
   end
   local msg = string.format("%s%s%s.", content, cause, action)
 
