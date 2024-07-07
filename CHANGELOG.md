@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.3...v0.4.4) (2024-07-07)
+
+
+### Bug Fixes
+
+* **Logger:** fix a typo ([7f10ad4](https://github.com/jnpngshiii/logger.nvim/commit/7f10ad413802fcda2dd5cb588a27b4411fdca183))
+
 ## [0.4.3](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.2...v0.4.3) (2024-07-07)
 
 
