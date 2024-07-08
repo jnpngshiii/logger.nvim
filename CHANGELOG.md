@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.6](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.5...v0.4.6) (2024-07-08)
+
+
+### Features
+
+* **Logger:** add `pin_log_level` ([78a1c73](https://github.com/jnpngshiii/logger.nvim/commit/78a1c73e380766acd6238702e0d654bca0d700f4))
+
 ## [0.4.5](https://github.com/jnpngshiii/logger.nvim/compare/v0.4.4...v0.4.5) (2024-07-07)
 
 
