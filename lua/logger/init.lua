@@ -11,13 +11,20 @@ local M = {}
 ---@param plugin string Which plugin is using this logger.
 ---@param log_level? number Log level of the logger.
 ---Default: `vim.log.levels.INFO`.
+---@param pin_log_level? boolean Whether to pin the log level.
+---If this is set to `true`, the log level of the logger will not be overridden by the sources.
+---It is useful when you want to use the same log level for all sources.
+---For example, you may have used different logging levels for different sources when developing a plugin.
+---When you release the plugin, you can set the log level to DEBUG to avoid the impact without having to manually change the log level for each source.
+---See `Logger:register_source` for more information.
+---Default: `false`.
 ---@return Logger logger The registered logger.
-function M.register_plugin(plugin, log_level)
+function M.register_plugin(plugin, log_level, pin_log_level)
   log_level = log_level or vim.log.levels.INFO
 
   local logger = plugin_func.get_cache().loggers[plugin]
   if not logger then
-    logger = Logger:new(plugin, log_level)
+    logger = Logger:new(plugin, log_level, pin_log_level)
     plugin_func.get_cache().loggers[plugin] = logger
   end
 

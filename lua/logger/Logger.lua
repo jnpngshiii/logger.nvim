@@ -131,6 +131,13 @@ end
 ---Set this to override the default log level of the logger.
 ---See `Logger:register_source` for more information.
 ---Default: `{}`.
+---@field pin_log_level? boolean Whether to pin the log level.
+---If this is set to `true`, the log level of the logger will not be overridden by the sources.
+---It is useful when you want to use the same log level for all sources.
+---For example, you may have used different logging levels for different sources when developing a plugin.
+---When you release the plugin, you can set the log level to DEBUG to avoid the impact without having to manually change the log level for each source.
+---See `Logger:register_source` for more information.
+---Default: `false`.
 ---@field events Event Logged events of the logger.
 local Logger = {}
 Logger.__index = Logger
@@ -145,14 +152,22 @@ Logger.__index = Logger
 ---@param log_level number Log level of the logger.
 ---Event with level lower than this will not be logged.
 ---Default: `vim.log.levels.INFO`.
+---@param pin_log_level? boolean Whether to pin the log level.
+---If this is set to `true`, the log level of the logger will not be overridden by the sources.
+---It is useful when you want to use the same log level for all sources.
+---For example, you may have used different logging levels for different sources when developing a plugin.
+---When you release the plugin, you can set the log level to DEBUG to avoid the impact without having to manually change the log level for each source.
+---See `Logger:register_source` for more information.
+---Default: `false`.
 ---@return Logger logger The create logger.
-function Logger:new(plugin, log_level)
+function Logger:new(plugin, log_level, pin_log_level)
   local log_dir = vim.fn.stdpath("data") .. "/" .. plugin .. "/" .. "logs"
   vim.fn.mkdir(log_dir, "p")
 
   local logger = {
     log_path = log_dir .. "/" .. os.date("%Y-%m-%d_%H-%M-%S") .. ".log",
     log_level = log_level or vim.log.levels.INFO,
+    pin_log_level = pin_log_level or false,
     source_log_levels = {},
     events = {},
   }
@@ -191,6 +206,9 @@ function Logger:log(level, source, event_info)
   end
 
   local local_log_level = self.source_log_levels[source] or self.log_level
+  if self.pin_log_level then
+    local_log_level = self.log_level
+  end
   if level < local_log_level then
     return
   end
